@@ -94,5 +94,5 @@
         1. `pip install -r requirements.txt`        
         2. `./manage.py runserver 0:8000`       
 18. 브라우저 확인     
-        1. 브라우저에 `<public dns주소>:8000`으로 접속 
+        1. 브라우저에 `<public dns주소>:8000`으로 접속         
         2. 로켓 발싸!
