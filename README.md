@@ -96,3 +96,204 @@
 18. 브라우저 확인     
         1. 브라우저에 `<public dns주소>:8000`으로 접속         
         2. 로켓 발싸!
+
+19. `redis-server`설치
+`redis-channel-layer`를 사용하려면 필요.
+`sudo apt-get install redis-server`
+
+20. `tmux` 설치
+`sudo apt-get install tmux`
+
+21. `tmux` 키고 `redis-server` 켬
+    1. `tmux new`
+    2. `(ctrl+b) + %`후 창이 나뉘어 지면 `(ctrl+b) + q`를 사용하여 창 이동후
+    3. `redis-server` 작동시킴  
+
+# chat 설정
+1. `django-admin startapp chat`
+2. `model`
+```python
+from django.db import models
+
+
+class Room(models.Model):
+    name = models.CharField(verbose_name='채팅방 이름', max_length=255)
+    group_name = models.SlugField(verbose_name='채팅방 그룹 이름', unique=True)
+
+    def __str__(self):
+        return self.name
+
+
+class RoomMessage(models.Model):
+    room = models.ForeignKey(Room, related_name='messages', on_delete=models.CASCADE)
+    message = models.TextField(verbose_name='메세지')
+    created = models.DateTimeField(verbose_name='생성 날짜', auto_now_add=True, db_index=True)
+
+    def __str__(self):
+        return self.message
+
+    def get_created(self):
+        return self.created.strftime('%p %I:%M')
+```
+3. `routing.py`
+```python
+from django.urls import path
+
+from . import consumers
+
+websocket_urlpatterns = [
+    path('ws/main/', consumers.ChatConsumer),
+]
+```
+4. `consumers.py`
+```python
+import json
+
+from channels.generic.websocket import AsyncJsonWebsocketConsumer
+
+
+class ChatConsumer(AsyncJsonWebsocketConsumer):
+    async def connect(self):
+        self.noti_group_name = 'main'
+
+        await self.channel_layer.group_add(
+            self.noti_group_name,
+            self.channel_name
+        )
+
+        await self.accept()
+
+    async def disconnect(self, code):
+        await self.channel_layer.group_discard(
+            self.noti_group_name,
+            self.channel_name
+        )
+
+    async def chat_message(self, event):
+        message = event['message']
+        created = event['created']
+        await self.send(text_data=json.dumps({
+            'message': message,
+            'created': created
+        }))
+
+```
+
+5. `config`에 `asgi.py` 추가
+```python
+"""    
+ASGI entrypoint. Configures Django and then runs the application
+defined in the ASGI_APPLICATION setting.
+"""
+
+import os
+import django
+from channels.routing import get_default_application
+
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")
+django.setup()
+application = get_default_application()
+```
+6. `config` `routing.py`추가
+```python
+from channels.auth import AuthMiddlewareStack
+from channels.routing import ProtocolTypeRouter, URLRouter
+from chat.routing import websocket_urlpatterns
+
+application = ProtocolTypeRouter({
+    'websocket': AuthMiddlewareStack(
+        URLRouter(
+            websocket_urlpatterns
+        )
+    )
+})
+
+``` 
+
+6-1. `templatestags`폴더 추가 및 코드 추가       
+```
+# chat app
+├── templatetags
+│   ├── __init__.py
+│   └── chat_extra_tags.py
+```
+
+```python
+# chat_extra_tags.py
+from django import template
+from chat.models import Room
+
+register = template.Library()
+
+
+@register.simple_tag
+def get_main_message():
+    room = Room.objects.get(group_name='main')
+    old_messages = room.messages.order_by('-created')[:50]
+    return old_messages
+
+```
+
+```python
+# settings.py
+TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': [
+            # 추가
+            'templates'
+        ],
+   ...
+
+```
+
+7. `settings.py`
+```python
+INSTALLED_APPS = [
+    'channels',
+
+    ...
+
+    'chat',
+]
+...
+ASGI_APPLICATION = 'config.routing.application'
+
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            "hosts": [('127.0.0.1', 6379)],
+        },
+    },
+}
+
+```
+
+8. `channels`, `channels-redis`설치
+        1. `pip install channels`       
+        2. `pip install channels-redis`     
+        3. `pip freeze > requirements.txt`      
+        4. `git commit and push`
+        
+# ec2 에서 pull받아 작업
+1. `git pull origin master`
+2. `pip install -r requirements.txt`
+3. `./manage.py makemigraions && migrate`
+실행후 다음 메시지로 변경
+```shell
+System check identified no issues (0 silenced).
+January 04, 2019 - 09:00:48
+Django version 2.1.4, using settings 'config.settings'
+Starting development server at http://127.0.0.1:8000/
+Quit the server with CONTROL-C.
+
+에서 
+
+System check identified no issues (0 silenced).
+January 04, 2019 - 08:59:23
+Django version 2.1.4, using settings 'config.settings'
+# 아래 부분에 development server 가 ASGI로 바뀜 
+Starting ASGI/Channels version 2.1.6 development server at http://0:8000/
+Quit the server with CONTROL-C.
+```
