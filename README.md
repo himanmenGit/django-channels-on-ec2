@@ -14,4 +14,10 @@
 10. `pip freeze > requirements.txt`
 11. `git add -A && git commit -m 'first commit'` 
 
+# git hub
+1. `git hub` -> `new repository` -> `django-channels-on-ec2`
+2. `git remote add origin git@github.com:himanmenGit/django-channels-on-ec2.git`
+3. `git push -u origin master`
+
 # ec2 셋팅
+
