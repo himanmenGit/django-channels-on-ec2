@@ -43,7 +43,6 @@ ALLOWED_HOSTS = [
 # Application definition
 
 INSTALLED_APPS = [
-    'sslserver',
     'channels',
 
     'django.contrib.admin',
