@@ -6,13 +6,13 @@
 2. `cd django-channels-on-ec2`
 3. `git init`
 4. `touch .gitignore` <https://www.gitignore.io/>에서 `git,linux,macos,python,django,pycharm+all` 검색후 복사      
-        1. `.secrets` 추가
+        1. `.secrets`를 `.gitignore`에 추가        
 5. `pyenv virtualenv 3.6.5 ec2`
 6. `pyenv local ec2`
 7. `pip install django`
 8. `django-admin startproject config`
 9. `mv config app`
-10. `pip freeze > requirements.txt`
+10. `pip freeze > requirements.txt`     
 11.`settings.py` 수정
     ```python
     BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -30,13 +30,19 @@
     ALLOWED_HOSTS = [
         '.amazonaws.com',
     ]
-    ```
-    
-12. `git hub` 설정         
+    ```    
+12. `.secret/base.json` 파일 추가       
+```json
+{
+  "SECRET_KEY": "<django secret key>"
+}
+```  
+
+13. `git hub` 설정         
         1. `git hub` -> `new repository` -> `django-channels-on-ec2`        
         2. `git remote add origin git@github.com:himanmenGit/django-channels-on-ec2.git`        
         3. `git push -u origin master`
-13. `git add -A && git commit -m 'first commit'`
+14. `git add -A && git commit -m 'first commit'`
 
 # ec2 셋팅
 1. `ec2 instance 생성`
@@ -108,6 +114,8 @@
     1. `tmux new`
     2. `(ctrl+b) + %`후 창이 나뉘어 지면 `(ctrl+b) + q`를 사용하여 창 이동후
     3. `redis-server` 작동시킴  
+
+![](/asset/django-channels-tmux.png)
 
 # chat 설정
 1. `django-admin startapp chat`
@@ -270,7 +278,7 @@ CHANNEL_LAYERS = {
 
 ```
 
-8. `channels`, `channels-redis`설치
+8. `channels`, `channels-redis`설치       
         1. `pip install channels`       
         2. `pip install channels-redis`     
         3. `pip freeze > requirements.txt`      
@@ -368,12 +376,10 @@ WebSocket CONNECT /ws/main/
 ```
 이런 로그가 나오면 성공.
 
-# api를 하나 열어서 메세지를 웹 소켓으로 전달
-1. `django-rest-framework`설치  
-        1. `pip install djangorestframework`
-        3. `pip freeze > requirements.txt`      
-        4. `git commit and push`
-        
+# api를 하나 열어서 메세지를 웹 소켓으로 전달          
+1. `django-rest-framework`설치 `pip install djangorestframework`              
+2. `pip freeze > requirements.txt`      
+4. `git commit and push`                
 
 `chat/views.py`에 `API` 추가
 ```python
@@ -416,3 +422,23 @@ urlpatterns = [
 ]
 
 ```
+
+# 확인
+1. 서버에 가서 `git pull origin master`를 한후 
+2. `pip install -r requirements.txt`로 `drf`를 설치 한다음 
+3. 서버를 다시 실행 `./manage.py runserver 0:8000`
+4. `ec2`의 `public dns`의 `url`을 기준으로한 `api`주소를 `requests`를 이용하여 `post`       
+```python
+import requests
+res = requests.post('http://123.456.789.0.ap-northeast-2.compute.amazonaws.com:8000/notification/', data={'message':'hello'})
+print(res)
+>>> <Response [200]>
+print(res.content)
+>>> b'{"status":200,"meesage":"hello send success"}'
+
+```
+### `localhost:8000`
+![](asset/django-channels-local.png)
+
+### `aws public dns`
+![](asset/django-channels-production.png)
