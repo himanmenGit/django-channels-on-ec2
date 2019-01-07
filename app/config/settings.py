@@ -36,6 +36,7 @@ DEBUG = True
 ALLOWED_HOSTS = [
     '.amazonaws.com',
     'localhost',
+    'www.himanmen.com',
     'himanmen.com'
 ]
 
