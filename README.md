@@ -12,8 +12,8 @@
 7. `pip install django`
 8. `django-admin startproject config`
 9. `mv config app`
-10. `pip freeze > requirements.txt`     
-11.`settings.py` 수정
+10. `pip freeze > requirements.txt`
+11. `settings.py` 수정
     ```python
     BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     ROOT_DIR = os.path.dirname(BASE_DIR)
@@ -32,11 +32,11 @@
     ]
     ```    
 12. `.secret/base.json` 파일 추가       
-```json
-{
-  "SECRET_KEY": "<django secret key>"
-}
-```  
+    ```json
+    {
+      "SECRET_KEY": "<django secret key>"
+    }
+    ```  
 
 13. `git hub` 설정         
         1. `git hub` -> `new repository` -> `django-channels-on-ec2`        
@@ -50,23 +50,23 @@
 3. `t2.micro` 프리티어 선택
 4. 다음,다음,다음 6단계 보안 그룹 구성
 5. 새 보안 그룹 생성       
-        1. 보안 그룹 이름 - `EC2 Security Group`
-        2. 보안 그룹 설명 - `Ec2 Deploy Security Group`
-        3. 소스 - `내 IP`, 설명 - `ssh`
+        1. 보안 그룹 이름 - `EC2 Security Group`  
+        2. 보안 그룹 설명 - `Ec2 Deploy Security Group`   
+        3. 소스 - `내 IP`, 설명 - `ssh`  
         4. 규칙 추가 - `사용자 지정 TCP`, 포트 번호 `8000`, 소스 `내 IP`, 설명 `web`
 6. 검토 및 시작 - 시작
 7. 키페어를 저장 후 인스턴스 시작 (`permission` 에러 나면 `chmod 400 <key pair>.pem`)
 8.  `'ssh -i <key path>ex)~/key.pem ubuntu@<ec2 ip4 퍼블릭 IP>',`
 9. `YES` - `Welcome to Ubuntu 16.04`
 10. `linux setting`     
-        1. `sudo vi /etc/default/locale`
-        2. `locale` 수정      
-            ```
-            LC_CTYPE="en_US.UTF-8"
-            LC_ALL="en_US.UTF-8"
-            LANG="en_US.UTF-8"
-            ```
-        3. 재 접속        
+        1. `sudo vi /etc/default/locale`    
+        2. `locale` 수정 후 재 접속      
+    ```
+    LC_CTYPE="en_US.UTF-8"
+    LC_ALL="en_US.UTF-8"
+    LANG="en_US.UTF-8"
+    ```   
+                
 11. `linux update`      
         1. `sudo apt-get update`    
         2. `sudo apt-get dist upgrade` 마지막에 엔터       
@@ -377,51 +377,50 @@ WebSocket CONNECT /ws/main/
 이런 로그가 나오면 성공.
 
 # api를 하나 열어서 메세지를 웹 소켓으로 전달          
-1. `django-rest-framework`설치 `pip install djangorestframework`              
-2. `pip freeze > requirements.txt`      
-4. `git commit and push`                
+1. `django-rest-framework`설치 `pip install djangorestframework`  
 
-`chat/views.py`에 `API` 추가
-```python
-from rest_framework.response import Response
-from rest_framework.views import APIView
-
-from channels.layers import get_channel_layer
-from asgiref.sync import async_to_sync
-
-
-...
-
-class Notification(APIView):
-    def post(self, request, *args, **kwargs):
-        room = Room.objects.get(group_name='main')
-        message = room.messages.create(message=request.data.get('message'))
-
-        channel_layer = get_channel_layer()
-        async_to_sync(channel_layer.group_send)(
-            'main',
-            {
-                'type': 'chat_message',
-                'message': str(message),
-                'created': message.created.strftime('%p %I:%M')
-            }
-        )
-
-        return Response({'status': 200, 'meesage': '{} send success'.format(message)})
-
-
-```
-
-`urls.py`에 `api`용 `url`추가
-```python
-# urls.py
-...
-urlpatterns = [
+2. `chat/views.py`에 `API` 추가
+    ```python
+    from rest_framework.response import Response
+    from rest_framework.views import APIView
+    
+    from channels.layers import get_channel_layer
+    from asgiref.sync import async_to_sync
+    
+    
     ...
-    path('notification/', Notification.as_view())
-]
-
-```
+    
+    class Notification(APIView):
+        def post(self, request, *args, **kwargs):
+            room = Room.objects.get(group_name='main')
+            message = room.messages.create(message=request.data.get('message'))
+    
+            channel_layer = get_channel_layer()
+            async_to_sync(channel_layer.group_send)(
+                'main',
+                {
+                    'type': 'chat_message',
+                    'message': str(message),
+                    'created': message.created.strftime('%p %I:%M')
+                }
+            )
+    
+            return Response({'status': 200, 'meesage': '{} send success'.format(message)})
+    
+    
+    ```
+3. `urls.py`에 `api`용 `url`추가
+    ```python
+    # urls.py
+    ...
+    urlpatterns = [
+        ...
+        path('notification/', Notification.as_view())
+    ]
+                   
+    ```
+2. `pip freeze > requirements.txt`      
+4. `git commit and push`
 
 # 확인
 1. 서버에 가서 `git pull origin master`를 한후 
@@ -435,7 +434,6 @@ print(res)
 >>> <Response [200]>
 print(res.content)
 >>> b'{"status":200,"meesage":"hello send success"}'
-
 ```
 ### `localhost:8000`
 ![](asset/django-channels-local.png)
