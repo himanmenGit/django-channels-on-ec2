@@ -297,3 +297,72 @@ Django version 2.1.4, using settings 'config.settings'
 Starting ASGI/Channels version 2.1.6 development server at http://0:8000/
 Quit the server with CONTROL-C.
 ```
+
+# view에 index.html 추가
+```python
+#chat/views.py
+from django.views.generic import TemplateView
+
+from chat.models import Room
+
+
+class Home(TemplateView):
+    template_name = 'index.html'
+
+    def get(self, request, *args, **kwargs):
+        # 단순히 시작히 룸을 만들기 위한 장치
+        Room.objects.get_or_create(name='노티룸', group_name='main')
+        return super().get(request, *args, **kwargs)
+```
+
+```html
+# index.html 
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8"/>
+    <title>Chat Room</title>
+</head>
+
+<body>
+<textarea id="chat-log" cols="100" rows="20"></textarea><br/>
+</body>
+{% load chat_extra_tags %}
+<script src="//cdnjs.cloudflare.com/ajax/libs/reconnecting-websocket/1.0.0/reconnecting-websocket.min.js"></script>
+<script>
+    {% get_main_message as old_messages %}
+
+    (function () {
+        let messages = [{% for message in old_messages %}'{{ message }}',{% endfor %}];
+        let creaties = [{% for message in old_messages %}'{{ message.get_created }}',{% endfor %}];
+        for (i = messages.length; i > 0; i--) {
+            document.querySelector('chat-log').value += (creaties[i - 1] + messages[i - 1] + '\n');
+        }
+    })();
+
+    let chatSocket = new ReconnectingWebSocket('ws://' + window.location.host + '/ws/main/');
+
+    let chat_log = document.querySelector("#chat-log");
+    chatSocket.onmessage = function (e) {
+        let data = JSON.parse(e.data);
+        let message = data['message'];
+        let created = data['created'];
+        chat_log.querySelector('chat-log').value += (created + message + '\n');
+    };
+
+    chatSocket.onclose = function (e) {
+        console.error('Chat socket closed unexpectedly', e);
+    };
+</script>
+
+</html>
+
+```
+서버에서 `redis-server`가 켜진 상태로 `runserver`를 해서 접속하면 
+```shell
+HTTP GET / 200 
+WebSocket DISCONNECT /ws/main/ 
+WebSocket HANDSHAKING /ws/main/ 
+WebSocket CONNECT /ws/main/ 
+```
+이런 로그가 나오면 성공.
