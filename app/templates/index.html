@@ -23,7 +23,7 @@
         }
     })();
 
-    let chatSocket = new ReconnectingWebSocket('ws://' + window.location.host + '/ws/main/');
+    let chatSocket = new ReconnectingWebSocket('wss://' + window.location.host + '/ws/main/');
 
     chatSocket.onmessage = function (e) {
         let data = JSON.parse(e.data);
