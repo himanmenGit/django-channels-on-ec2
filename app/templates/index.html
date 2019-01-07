@@ -13,22 +13,23 @@
 <script>
     {% get_main_message as old_messages %}
 
+    let chat_log = document.querySelector("#chat-log");
+
     (function () {
         let messages = [{% for message in old_messages %}'{{ message }}',{% endfor %}];
         let creaties = [{% for message in old_messages %}'{{ message.get_created }}',{% endfor %}];
         for (i = messages.length; i > 0; i--) {
-            document.querySelector('chat-log').value += (creaties[i - 1] + messages[i - 1] + '\n');
+            chat_log.value += ('message:[' + messages[i - 1] +']-- created:[' + creaties[i - 1] + ']\n');
         }
     })();
 
     let chatSocket = new ReconnectingWebSocket('ws://' + window.location.host + '/ws/main/');
 
-    let chat_log = document.querySelector("#chat-log");
     chatSocket.onmessage = function (e) {
         let data = JSON.parse(e.data);
         let message = data['message'];
         let created = data['created'];
-        chat_log.querySelector('chat-log').value += (created + message + '\n');
+        chat_log.value += ('message:[' + message +']-- created:[' + created + ']\n');
     };
 
     chatSocket.onclose = function (e) {

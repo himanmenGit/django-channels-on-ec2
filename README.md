@@ -332,22 +332,23 @@ class Home(TemplateView):
 <script>
     {% get_main_message as old_messages %}
 
+    let chat_log = document.querySelector("#chat-log");
+
     (function () {
-        let messages = [{% for message in old_messages %}'{{ message }}',{% endfor %}];
+        let messages = [{% for message in old_messages %}'{{ message }}',{% endfor %}];        
         let creaties = [{% for message in old_messages %}'{{ message.get_created }}',{% endfor %}];
         for (i = messages.length; i > 0; i--) {
-            document.querySelector('chat-log').value += (creaties[i - 1] + messages[i - 1] + '\n');
+            chat_log.value += ('message:[' + messages[i - 1] +']-- created:[' + creaties[i - 1] + ']\n');
         }
     })();
 
     let chatSocket = new ReconnectingWebSocket('ws://' + window.location.host + '/ws/main/');
 
-    let chat_log = document.querySelector("#chat-log");
     chatSocket.onmessage = function (e) {
         let data = JSON.parse(e.data);
         let message = data['message'];
         let created = data['created'];
-        chat_log.querySelector('chat-log').value += (created + message + '\n');
+        chat_log.value += ('message:[' + message +']-- created:[' + created + ']\n');
     };
 
     chatSocket.onclose = function (e) {
@@ -366,3 +367,52 @@ WebSocket HANDSHAKING /ws/main/
 WebSocket CONNECT /ws/main/ 
 ```
 이런 로그가 나오면 성공.
+
+# api를 하나 열어서 메세지를 웹 소켓으로 전달
+1. `django-rest-framework`설치  
+        1. `pip install djangorestframework`
+        3. `pip freeze > requirements.txt`      
+        4. `git commit and push`
+        
+
+`chat/views.py`에 `API` 추가
+```python
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
+
+
+...
+
+class Notification(APIView):
+    def post(self, request, *args, **kwargs):
+        room = Room.objects.get(group_name='main')
+        message = room.messages.create(message=request.data.get('message'))
+
+        channel_layer = get_channel_layer()
+        async_to_sync(channel_layer.group_send)(
+            'main',
+            {
+                'type': 'chat_message',
+                'message': str(message),
+                'created': message.created.strftime('%p %I:%M')
+            }
+        )
+
+        return Response({'status': 200, 'meesage': '{} send success'.format(message)})
+
+
+```
+
+`urls.py`에 `api`용 `url`추가
+```python
+# urls.py
+...
+urlpatterns = [
+    ...
+    path('notification/', Notification.as_view())
+]
+
+```
