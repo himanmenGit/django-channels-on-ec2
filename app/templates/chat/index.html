@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+{% load chat_extra_tags %}
+{% block content %}
+    <textarea id="chat-log" cols="100" rows="20"></textarea><br/>
+
+    <script src="//cdnjs.cloudflare.com/ajax/libs/reconnecting-websocket/1.0.0/reconnecting-websocket.min.js"></script>
+    <script>
+        {% get_main_message as old_messages %}
+
+        let chat_log = document.querySelector("#chat-log");
+
+        (function () {
+            let messages = [{% for message in old_messages %}'{{ message }}',{% endfor %}];
+            let creaties = [{% for message in old_messages %}'{{ message.get_created }}',{% endfor %}];
+            for (i = messages.length; i > 0; i--) {
+                chat_log.value += ('message:[' + messages[i - 1] + ']-- created:[' + creaties[i - 1] + ']\n');
+            }
+        })();
+
+        let chatSocket = new ReconnectingWebSocket('wss://' + window.location.host + '/ws/main/');
+
+        chatSocket.onmessage = function (e) {
+            let data = JSON.parse(e.data);
+            let message = data['message'];
+            let created = data['created'];
+            chat_log.value += ('message:[' + message + ']-- created:[' + created + ']\n');
+        };
+
+        chatSocket.onclose = function (e) {
+            console.error('Chat socket closed unexpectedly', e);
+        };
+    </script>
+
+{% endblock %}

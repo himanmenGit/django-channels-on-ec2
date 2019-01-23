@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
+    'core',
     'chat',
 ]
 
@@ -143,3 +144,6 @@ CHANNEL_LAYERS = {
         },
     },
 }
+
+MEDIA_ROOT = os.path.join(ROOT_DIR, '.media')
+MEDIA_URL = '/media/'
