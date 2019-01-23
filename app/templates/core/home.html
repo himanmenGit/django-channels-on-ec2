@@ -5,4 +5,8 @@
 
 {% block content %}
     어서 오세요.
+    <ul>
+        <li><a href="{% url 'chat_home' %}">채널스 채팅(노티)</a></li>
+        <li><a href="{% url 'book_list' %}">책 리스트</a></li>
+    </ul>
 {% endblock %}
