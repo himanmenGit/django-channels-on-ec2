@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h2>Book List</h2>
+    <p>
+        <a href="{% url 'upload_book' %}" class="btn btn-primary">업로드</a>
+    </p>
+
+    <table class="table mb-0">
+        <thead>
+        <tr>
+            <td>Cover</td>
+            <td>Title</td>
+            <td>Author</td>
+            <td>Download</td>
+        </tr>
+        </thead>
+        <tbody>
+        {% for book in books %}
+            <tr>
+                <td>
+                    {% if book.cover %}
+                        <img src="{{ book.cover.url }}" alt="{{ book.title }}" style="width: 100px;">
+                    {% else %}
+                        <span class="text-muted">No Cover</span>
+                    {% endif %}
+                </td>
+                <td>{{ book.title }}</td>
+                <td>{{ book.author }}</td>
+                <td>
+                    <a href="{{ book.pdf.url }}" class="btn btn-primary">
+                        다운로드
+                    </a>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}
