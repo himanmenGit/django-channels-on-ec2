@@ -25,6 +25,7 @@ urlpatterns = [
     path('', Home.as_view(), name='home'),
     path('core/', include('core.urls')),
     path('chat/', include('chat.urls')),
+    path('jwt/', include('simple-jwt.urls')),
 ]
 
 if settings.DEBUG:
