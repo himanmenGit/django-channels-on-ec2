@@ -9,7 +9,7 @@ from .forms import BookForm
 
 
 class Home(TemplateView):
-    template_name = 'core/home.html'
+    template_name = 'home.html'
 
 
 def upload(request):
@@ -40,6 +40,13 @@ def upload_book(request):
         return render(request, 'core/upload_book.html', {
             'form': form
         })
+
+
+def delete_book(request, pk):
+    if request.method == 'POST':
+        book = Book.objects.get(pk=pk)
+        book.delete()
+        return redirect('book_list')
 
 
 class BookListView(ListView):

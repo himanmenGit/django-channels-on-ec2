@@ -16,6 +16,7 @@
             <td>Title</td>
             <td>Author</td>
             <td>Download</td>
+            <td>Delete</td>
         </tr>
         </thead>
         <tbody>
@@ -34,6 +35,12 @@
                     <a href="{{ book.pdf.url }}" class="btn btn-primary">
                         다운로드
                     </a>
+                </td>
+                <td>
+                    <form action="{% url 'delete_book' book.pk %}" method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger">삭제</button>
+                    </form>
                 </td>
             </tr>
         {% endfor %}
