@@ -18,9 +18,12 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path, include
 
+from core.views import Home
+
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('core.urls')),
+    path('', Home.as_view(), name='home'),
+    path('core/', include('core.urls')),
     path('chat/', include('chat.urls')),
 ]
 

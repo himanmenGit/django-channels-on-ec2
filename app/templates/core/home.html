@@ -7,6 +7,12 @@
     어서 오세요.
     <ul>
         <li><a href="{% url 'chat_home' %}">채널스 채팅(노티)</a></li>
-        <li><a href="{% url 'book_list' %}">책 리스트</a></li>
+        <li>파일 업로드
+            <ul>
+                <li><a href="{% url 'upload' %}">파일 업로드</a></li>
+                <li><a href="{% url 'book_list' %}">Book List</a></li>
+                <li><a href="{% url 'class_book_list' %}">Class-Based Book List</a></li>
+            </ul>
+        </li>
     </ul>
 {% endblock %}
