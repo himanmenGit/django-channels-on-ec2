@@ -3,11 +3,11 @@
 {% load hosts %}
 
 {% block title %}
-    안녕하세요
+    Help
 {% endblock %}
 
 {% block content %}
-    어서 오세요.
+    어서 오세요. 헬프 페이지 입니다.
     <ul>
         <li><a href="{% host_url 'chat_home' %}">채널스 채팅(노티)</a></li>
         <li>파일 업로드
@@ -18,6 +18,5 @@
             </ul>
         </li>
         <li><a href="{% host_url 'token_obtain_pair' host 'api' %}">jwt 토큰(username=test/password=11test11)</a></li>
-        <li><a href="{% host_url 'home' host 'help' %}">헬프 페이지</a></li>
     </ul>
 {% endblock %}

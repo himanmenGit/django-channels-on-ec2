@@ -1,6 +1,4 @@
 server {
-    server_name himanmen.com www.himanmen.com;
-
     location / {
         proxy_pass http://127.0.0.1:8000;
         proxy_set_header Host $host;
@@ -34,13 +32,19 @@ server {
         return 301 https://$host$request_uri;
     } # managed by Certbot
 
-
     if ($host = www.himanmen.com) {
+        return 301 https://himanmen.com$request_uri;
+    } # managed by Certbot
+
+    if ($host = help.himanmen.com) {
         return 301 https://$host$request_uri;
     } # managed by Certbot
 
+    if ($host = api.himanmen.com) {
+        return 301 https://$host$request_uri;
+    } # managed by Certbot
 
-    server_name himanmen.com www.himanmen.com;
+    server_name himanmen.com www.himanmen.com help.himanmen.com api.himanmen.com;
     listen 80;
     return 404; # managed by Certbot
 }

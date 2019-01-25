@@ -37,7 +37,9 @@ ALLOWED_HOSTS = [
     '.amazonaws.com',
     'localhost',
     'www.himanmen.com',
-    'himanmen.com'
+    'himanmen.com',
+    'help.himanmen.com',
+    'api.himanmen.com',
 ]
 
 # Application definition
@@ -55,6 +57,7 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
 
     'crispy_forms',
+    'django_hosts',
 
     'core',
     'chat',
@@ -71,6 +74,8 @@ REST_FRAMEWORK = {
 }
 
 MIDDLEWARE = [
+    'django_hosts.middleware.HostsRequestMiddleware',
+
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -78,9 +83,14 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+
+    'django_hosts.middleware.HostsResponseMiddleware',
 ]
 
+ROOT_HOSTCONF = 'config.hosts'
 ROOT_URLCONF = 'config.urls'
+PARENT_HOST = 'himanmen.com'
+DEFAULT_HOST = 'www'
 
 TEMPLATES = [
     {
@@ -147,6 +157,12 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/2.1/howto/static-files/
 
 STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(ROOT_DIR, '.static')
+STATIC_DIR = os.path.join(BASE_DIR, 'static')
+
+STATICFILES_DIRS = [
+    STATIC_DIR,
+]
 
 ASGI_APPLICATION = 'config.routing.application'
 

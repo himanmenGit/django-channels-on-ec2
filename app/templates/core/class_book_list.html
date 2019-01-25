@@ -1,8 +1,10 @@
 {% extends 'core/book_list.html' %}
 
+{% load hosts %}
+
 {% block content_header %}
 <h2>Books (Class-Based View)</h2>
     <p>
-        <a href="{% url 'class_upload_book' %}" class="btn btn-primary">Class Upload Book</a>
+        <a href="{% host_url 'class_upload_book' %}" class="btn btn-primary">Class Upload Book</a>
     </p>
 {% endblock %}
